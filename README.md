@@ -38,7 +38,7 @@ Then build tor as normal. The simulator is tested as part of tor's unit testing
 framework, you can check for it as follows:
 
 ```
-$ ./src/test/test circuitpadding_sim/.. 
+./src/test/test circuitpadding_sim/.. 
 circuitpadding_sim/circuitpadding_sim_main: [forking] OK
 1 tests ok.  (0 skipped)
 ```
@@ -87,9 +87,7 @@ rm ./data/defended/client-traces/*                # Remove any old traces
 rm ./data/defended/relay-traces/*                # Remove any old traces
 grep "source=client" ./data/defended/combined-logs/eff.org.log > ./data/defended/client-logs/eff.org.log
 grep "source=relay" ./data/defended/combined-logs/eff.org.log > ./data/defended/relay-logs/eff.org.log
-
-# XXX: This says invalid trace :/
-./torlog2circpadtrace.py -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/
+./torlog2circpadtrace.py --ip -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/
 ./torlog2circpadtrace.py -i ./data/defended/client-logs/ -o ./data/defended/client-traces/
 git diff ./data/defended/client-traces/          # No diff
 git diff ./data/defended/relay-traces/          # Timestamp diffs

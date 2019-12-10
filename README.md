@@ -115,7 +115,11 @@ different circuits recorded in it. Because the circuit padding simulator only
 works on one circuit at a time, you must separate each circuit into its own
 log and trace files.
 
-XXX: TODO write helper to split log files into multiple trace files.
+A [set of Tor Browser docker-based orchestration
+scripts](https://github.com/pylls/padding-machines-for-tor/tree/master/collect-traces)
+to generate a set of undefended traces is also available, but be aware that
+additional sanity checking and cleanup is needed to ensure that each site only
+uses one circuit.
 
 ## Creating Fake Relay Traces
 
@@ -123,7 +127,7 @@ In order for padding machines to work, they need traces for both a relay and a
 client (because there are padding machines both at the client, and at a
 relay).
 
-XXX: Multipile circuit problem
+XXX: Multipile circuit problem + relay circid matching
 
 If your experiments are not using timing information, you can create a
 synthetic relay trace for input into the simulator using a real client trace:

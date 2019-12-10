@@ -49,15 +49,15 @@ built-in padding machines to, using the unit test as a simulator.
 First, we must convert our undefended Tor client logs into trace files. From
 this circpad-sim checkout, do:
 ```
-rm ./data/undefended/example-client-traces/*.trace   # Remove reference trace data
-./torlog2circpadtrace.py -i ./data/undefended/example-client-logs/ -o ./data/undefended/example-client-traces/
+rm ./data/undefended/client-traces/*.trace   # Remove reference trace data
+./torlog2circpadtrace.py -i ./data/undefended/client-logs/ -o ./data/undefended/client-traces/
 git diff data                # Verify new data matches old (no diff)
 ```
 
 Now, we need to use these client traces to simulate some relay-side traces:
 ```
-rm ./data/undefended/example-fakerelay-traces/*.trace   # Remove reference trace data
-./simrelaytrace.py -i ./data/undefended/example-client-traces/ -o data/undefended/example-fakerelay-traces
+rm ./data/undefended/fakerelay-traces/*.trace   # Remove reference trace data
+./simrelaytrace.py -i ./data/undefended/client-traces/ -o data/undefended/fakerelay-traces
 git diff data                # Timestamps will differ but not event order
 ```
 
@@ -66,10 +66,10 @@ applying a padding machine defense to them, using the previously compiled Tor
 test binary:
 
 ```
-../tor/src/test/test --info circuitpadding_sim/.. --circpadsim ./data/undefended/example-client-traces/eff.org.trace ./data/undefended/example-fakerelay-traces/eff.org.trace 1 > ./data/defended/example-combined-sim-logs/eff.org.log
+../tor/src/test/test --info circuitpadding_sim/.. --circpadsim ./data/undefended/client-traces/eff.org.trace ./data/undefended/fakerelay-traces/eff.org.trace 1 > ./data/defended/combined-sim-logs/eff.org.log
 ```
 
-This gives Tor log output of the following format in `./data/defended/example-combined-sim-logs/eff.org.log`:
+This gives Tor log output of the following format in `./data/defended/combined-sim-logs/eff.org.log`:
 
 ```
 Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339844396 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
@@ -83,14 +83,16 @@ Note that this log file contains *both* relay and client traces!
 To convert that log output into a trace file that can then again be used as
 input to classifiers or other code, do:
 ```
-rm ./data/defended/example-client-traces/*                # Remove any old traces
-rm ./data/defended/example-relay-traces/*                # Remove any old traces
-grep "source=client" ./data/defended/example-combined-sim-logs/eff.org.log > ./data/defended/example-client-logs/eff.org.log
-grep "source=relay" ./data/defended/example-combined-sim-logs/eff.org.log > ./data/defended/example-relay-logs/eff.org.log
-./torlog2circpadtrace.py -i ./data/defended/example-relay-logs/ -o ./data/defended/example-relay-traces/
-./torlog2circpadtrace.py -i ./data/defended/example-client-logs/ -o ./data/defended/example-client-traces/
-git diff ./data/defended/example-client-traces/          # No diff
-git diff ./data/defended/example-relay-traces/          # Timestamp diffs
+rm ./data/defended/client-traces/*                # Remove any old traces
+rm ./data/defended/relay-traces/*                # Remove any old traces
+grep "source=client" ./data/defended/combined-sim-logs/eff.org.log > ./data/defended/client-logs/eff.org.log
+grep "source=relay" ./data/defended/combined-sim-logs/eff.org.log > ./data/defended/relay-logs/eff.org.log
+
+# XXX: This says invalid trace :/
+./torlog2circpadtrace.py -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/
+./torlog2circpadtrace.py -i ./data/defended/client-logs/ -o ./data/defended/client-traces/
+git diff ./data/defended/client-traces/          # No diff
+git diff ./data/defended/relay-traces/          # Timestamp diffs
 ```
 
 You should now have defended trace files for the client side and the relay

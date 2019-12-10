@@ -22,7 +22,7 @@ traces, yielding defended traces, either in simulation, or on the live Tor
 network.
 
 
-## QuickStart and Test
+## QuickStart and Test Examples
 
 Assuming you have this repository checked out in a directory named
 `circpad-sim`, and you're currently in that directory, then do:
@@ -43,32 +43,62 @@ circuitpadding_sim/circuitpadding_sim_main: [forking] OK
 1 tests ok.  (0 skipped)
 ```
 
-This repository also has some example traces that you can apply the built-in
-padding machines to, using the unit test as a simulator.
+This repository also has some example logs and traces that you can apply the
+built-in padding machines to, using the unit test as a simulator.
 
-This process requires a client-side trace file, and a relay-side trace file.
-To apply compiled-in circpad machines to a pair of relay and client traces:
+First, we must convert our undefended Tor client logs into trace files. From
+this circpad-sim checkout, do:
+```
+rm ./data/undefended/example-client-traces/*.trace   # Remove reference trace data
+./torlog2circpadtrace.py -i ./data/undefended/example-client-logs/ -o ./data/undefended/example-client-traces/
+git diff data                # Verify new data matches old (no diff)
+```
+
+Now, we need to use these client traces to simulate some relay-side traces:
+```
+rm ./data/undefended/example-fakerelay-traces/*.trace   # Remove reference trace data
+./simrelaytrace.py -i ./data/undefended/example-client-traces/ -o data/undefended/example-fakerelay-traces
+git diff data                # Timestamps will differ but not event order
+```
+
+Once we have both client-side and relay-side trace files, we can simulate
+applying a padding machine defense to them, using the previously compiled Tor
+test binary:
 
 ```
-./src/test/test --info circuitpadding_sim/.. --circpadsim ../circpad-sim/data/circpadtrace-example/eff.org.trace ../circpad-sim/data/sim-relay-circpadtrace-example/eff.org.trace 1 > ../circpad-sim/data/torlog-example/defended-eff.log
+../tor/src/test/test --info circuitpadding_sim/.. --circpadsim ./data/undefended/example-client-traces/eff.org.trace ./data/undefended/example-fakerelay-traces/eff.org.trace 1 > ./data/defended/example-combined-sim-logs/eff.org.log
 ```
 
-This gives Tor log output of the following format in `../circpad-sim/data/torlog-example/defended-eff.log`:
+This gives Tor log output of the following format in `./data/defended/example-combined-sim-logs/eff.org.log`:
 
 ```
-Nov 07 16:22:59.000 [info] circpad_trace_event(): timestamp=1668564966 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
-Nov 07 16:23:00.000 [info] circpad_trace_event(): timestamp=1731585868 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_received
-Nov 07 16:23:00.000 [info] circpad_trace_event(): timestamp=1731854076 source=client client_circ_id=2 event=circpad_machine_event_circ_added_hop
-Nov 07 16:23:00.000 [info] circpad_trace_event(): timestamp=1731901343 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
-Nov 07 16:23:00.000 [info] circpad_trace_event(): timestamp=1952113125 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_received
+Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339844396 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
+Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339850638 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
+Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11375969198 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
+Dec 10 10:13:50.241 [info] circpad_trace_event__real: timestamp=11376008271 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
 ```
+
+Note that this log file contains *both* relay and client traces!
 
 To convert that log output into a trace file that can then again be used as
-input to the simulator (or other code), do:
+input to classifiers or other code, do:
 ```
-rm ./data/circpadtrace-example/*       # Remove any old traces
-./torlog2circpadtrace.py -i data/torlog-example/ -o data/circpadtrace-example/
+rm ./data/defended/example-client-traces/*                # Remove any old traces
+rm ./data/defended/example-relay-traces/*                # Remove any old traces
+grep "source=client" ./data/defended/example-combined-sim-logs/eff.org.log > ./data/defended/example-client-logs/eff.org.log
+grep "source=relay" ./data/defended/example-combined-sim-logs/eff.org.log > ./data/defended/example-relay-logs/eff.org.log
+./torlog2circpadtrace.py -i ./data/defended/example-relay-logs/ -o ./data/defended/example-relay-traces/
+./torlog2circpadtrace.py -i ./data/defended/example-client-logs/ -o ./data/defended/example-client-traces/
+git diff ./data/defended/example-client-traces/          # No diff
+git diff ./data/defended/example-relay-traces/          # Timestamp diffs
 ```
+
+You should now have defended trace files for the client side and the relay
+side.
+
+To verify operation, if you diff your client traces to the ones in this repo,
+they should be identical. Note that the simulated relay traces may differ a
+bit due to the simulated latency between client and relay.
 
 ## Collecting Real Client Traces
 
@@ -80,31 +110,41 @@ To collect a client side trace using Tor Browser (TB):
 Additional information on running a custom Tor with Tor Browser can be found
 in the [Tor Browser Hacking Guide](https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Hacking#RunningMultipleTorBrowsers).
 
+Note that the example.log file created by Tor Browser will have multiple
+different circuits recorded in it. Because the circuit padding simulator only
+works on one circuit at a time, you must separate each circuit into its own
+log and trace files.
+
+XXX: TODO write helper to split log files into multiple trace files.
+
 ## Creating Fake Relay Traces
 
 In order for padding machines to work, they need traces for both a relay and a
 client (because there are padding machines both at the client, and at a
 relay).
 
+XXX: Multipile circuit problem
+
 If your experiments are not using timing information, you can create a
 synthetic relay trace for input into the simulator using a real client trace:
-
 
 ```
 ./simrelaytrace.py -i data/circpadtrace-example/ -o data/sim-relay-circpadtrace-example/
 ```
 
+Note once you have these input trace files, the padding simulator will output
+log files with *both* relay and client log lines. You do not need to generate
+fake trace files for defended traces:
+
 ```
 mkdir example example/log example/client example/relay
-./tor/src/test/test circuitpadding_sim/.. --circpadsim data/circpadtrace-example/eff.org.trace data/sim-relay-circpadtrace-example/eff.org.trace --info > example/log/eff.org.log
-./torlog2circpadtrace.py -i example/log/ -o example/client/
-./simrelaytrace.py -i example/client/ -o example/relay/
-```
+./tor/src/test/test --info circuitpadding_sim/.. --circpadsim data/circpadtrace-example/eff.org.trace data/sim-relay-circpadtrace-example/eff.org.trace 1 > example/log/defended-eff.org.log
 
-If you compare `example/client/eff.org.trace` and
-`data/circpadtrace-example/eff.org.trace` they should be identical. Note that the
-simulated relay traces may differ a bit due to the simulated latency between
-client and relay.
+grep "source=client" ./example/log/defended-eff.log  > ./data/torlog-example/client-defended-eff.log
+grep "source=relay" ./example/log/defended-eff.log  > ./data/torlog-example/relay-defended-eff.log
+./torlog2circpadtrace.py -i ./data/torlog-example/client-defended-eff.log -o ./data/circpadtrace-example/client-defended-eff.trace
+./torlog2circpadtrace.py -i ./data/torlog-example/relay-defended-eff.log -o ./data/circpadtrace-example/relay-defended-eff.trace
+```
 
 ## Collecting Real Relay Traces
 

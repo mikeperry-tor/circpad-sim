@@ -66,10 +66,10 @@ applying a padding machine defense to them, using the previously compiled Tor
 test binary:
 
 ```
-../tor/src/test/test --info circuitpadding_sim/.. --circpadsim ./data/undefended/client-traces/eff.org.trace ./data/undefended/fakerelay-traces/eff.org.trace 1 > ./data/defended/combined-sim-logs/eff.org.log
+../tor/src/test/test --info circuitpadding_sim/.. --circpadsim ./data/undefended/client-traces/eff.org.trace ./data/undefended/fakerelay-traces/eff.org.trace 1 > ./data/defended/combined-logs/eff.org.log
 ```
 
-This gives Tor log output of the following format in `./data/defended/combined-sim-logs/eff.org.log`:
+This gives Tor log output of the following format in `./data/defended/combined-logs/eff.org.log`:
 
 ```
 Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339844396 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
@@ -85,8 +85,8 @@ input to classifiers or other code, do:
 ```
 rm ./data/defended/client-traces/*                # Remove any old traces
 rm ./data/defended/relay-traces/*                # Remove any old traces
-grep "source=client" ./data/defended/combined-sim-logs/eff.org.log > ./data/defended/client-logs/eff.org.log
-grep "source=relay" ./data/defended/combined-sim-logs/eff.org.log > ./data/defended/relay-logs/eff.org.log
+grep "source=client" ./data/defended/combined-logs/eff.org.log > ./data/defended/client-logs/eff.org.log
+grep "source=relay" ./data/defended/combined-logs/eff.org.log > ./data/defended/relay-logs/eff.org.log
 
 # XXX: This says invalid trace :/
 ./torlog2circpadtrace.py -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/

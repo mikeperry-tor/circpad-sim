@@ -21,7 +21,6 @@ undefended (non-padded) traces and then apply padding machines to these
 traces, yielding defended traces, either in simulation, or on the live Tor
 network.
 
-
 ## QuickStart and Test Examples
 
 Assuming you have this repository checked out in a directory named
@@ -51,14 +50,14 @@ this circpad-sim checkout, do:
 ```
 rm ./data/undefended/client-traces/*.trace   # Remove reference trace data
 ./torlog2circpadtrace.py -i ./data/undefended/client-logs/ -o ./data/undefended/client-traces/
-git diff data                # Verify new data matches old (no diff)
+git diff data                                # No diff for client traces
 ```
 
 Now, we need to use these client traces to simulate some relay-side traces:
 ```
-rm ./data/undefended/fakerelay-traces/*.trace   # Remove reference trace data
+rm ./data/undefended/fakerelay-traces/*  # Remove reference trace data
 ./simrelaytrace.py -i ./data/undefended/client-traces/ -o data/undefended/fakerelay-traces
-git diff data                # Timestamps will differ but not event order
+git diff data                            # Timestamps differ, but not event order
 ```
 
 Once we have both client-side and relay-side trace files, we can simulate
@@ -83,14 +82,14 @@ Note that this log file contains *both* relay and client traces!
 To convert that log output into a trace file that can then again be used as
 input to classifiers or other code, do:
 ```
-rm ./data/defended/client-traces/*                # Remove any old traces
+rm ./data/defended/client-traces/*               # Remove any old traces
 rm ./data/defended/relay-traces/*                # Remove any old traces
 grep "source=client" ./data/defended/combined-logs/eff.org.log > ./data/defended/client-logs/eff.org.log
 grep "source=relay" ./data/defended/combined-logs/eff.org.log > ./data/defended/relay-logs/eff.org.log
 ./torlog2circpadtrace.py --ip -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/
 ./torlog2circpadtrace.py -i ./data/defended/client-logs/ -o ./data/defended/client-traces/
 git diff ./data/defended/client-traces/          # No diff
-git diff ./data/defended/relay-traces/          # Timestamp diffs
+git diff ./data/defended/relay-traces/           # Timestamp diffs
 ```
 
 You should now have defended trace files for the client side and the relay
@@ -100,7 +99,7 @@ To verify operation, if you diff your client traces to the ones in this repo,
 they should be identical. Note that the simulated relay traces may differ a
 bit due to the simulated latency between client and relay.
 
-## Collecting Real Client Traces
+## Collecting Client-Side Traces
 
 To collect a client side trace using Tor Browser (TB):
 - copy `src/app/tor` and replace `tor` at `Browser/TorBrowser/Tor` of TB
@@ -121,80 +120,138 @@ to generate a set of undefended traces is also available, but be aware that
 additional sanity checking and cleanup is needed to ensure that each site only
 uses one circuit.
 
-## Creating Fake Relay Traces
+## Collecting Relay-Side Traces
 
 In order for padding machines to work, they need traces for both a relay and a
 client (because there are padding machines both at the client, and at a
 relay).
 
-XXX: Multipile circuit problem + relay circid matching
+### Synthetic Relay Traces
 
 If your experiments are not using timing information, you can create a
 synthetic relay trace for input into the simulator using a real client trace:
 
 ```
-./simrelaytrace.py -i data/circpadtrace-example/ -o data/sim-relay-circpadtrace-example/
+./simrelaytrace.py -i ./data/undefended/client-traces/ -o data/undefended/fakerelay-traces
 ```
 
-Note once you have these input trace files, the padding simulator will output
-log files with *both* relay and client log lines. You do not need to generate
-fake trace files for defended traces:
+### Real Relay Traces
+
+However, if your experiments are sensitive to time (see [the circpad timing
+section for more
+info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations)),
+and/or if you are reproducing your padding machines on the live network, you will
+want to run the [circpad simulator Tor
+branch](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) with your
+padding machines applied as a middle relay.
+
+Your Torrc should look roughy like:
 
 ```
-mkdir example example/log example/client example/relay
-./tor/src/test/test --info circuitpadding_sim/.. --circpadsim data/circpadtrace-example/eff.org.trace data/sim-relay-circpadtrace-example/eff.org.trace 1 > example/log/defended-eff.org.log
+Nickname researchermiddle
+ORPort 9001
+ExitRelay 0
+Log notice stdout
+Log [circ]info notice file relay.log
+```
+Then, when Tor starts up and tells you your relay fingerprint, you should go
+back to your Tor Browser torrc, and add:
 
-grep "source=client" ./example/log/defended-eff.log  > ./data/torlog-example/client-defended-eff.log
-grep "source=relay" ./example/log/defended-eff.log  > ./data/torlog-example/relay-defended-eff.log
-./torlog2circpadtrace.py -i ./data/torlog-example/client-defended-eff.log -o ./data/circpadtrace-example/client-defended-eff.trace
-./torlog2circpadtrace.py -i ./data/torlog-example/relay-defended-eff.log -o ./data/circpadtrace-example/relay-defended-eff.trace
+``` MiddleNodes YOUR_FINGERPRINT_HERE Log [circ]info notice file client.log
 ```
 
-## Collecting Real Relay Traces
+It will [take some time for new
+relays](https://blog.torproject.org/lifecycle-new-relay) to obtain the Fast
+flag from the authorites (which they must have to get used by your client).
+
+With pinned middle nodes, the simulator branch will send a special logging
+command cell only for your client branch circuits, to those middle nodes,
+instructing them to log only your Tor circuits. This special logging
+negotiation cell is stripped from the log trace files, so it will not affect
+your results. XXX: Test this
+
+The circuit IDs will also be sent across in this cell, so numerically they
+will match on the client and the relay. 
+
+You can alternatively (or additionally) log at the entry node by editing the
+`log_at_hops` variable of the function
+[circpad_negotiate_logging()](https://github.com/mikeperry-tor/tor/blob/circpad-sim-v4/src/core/or/circuitpadding.c#L2204)
+in `tor/src/core/or/circuitpadding.c` in the Tor circpad simulator branch.
+You can list as many hop positions as you have relays for there.
+
+Then, any entry nodes or bridges you specify (with `EntryNodes` or `Bridge`
+directives) will also log your traces, too.
+
+NOTE: If you list any positions that you do not control in that `log_at_hops`
+array, or don't properly restrict your client to use only your relays for
+those hops, you will get error cells back, which may affect your results.
 
 XXX: Test + writeme
-   - Document MiddleNodes scheck for negotiation
-   - Document logging mechanisms (guard middle exit rp)
+   - Verify real traces match simulator output in event ordering
 
 ## Running experiments
 
 In `circpad-sim-exp.py` you'll find a brief example with mostly comments of how
-one could evaluate padding machines with the circuitpadding simulator. Run it as
-follows:
+one could script the evaluation of padding machines with the circuitpadding
+simulator.
+
+While in this `circpad-sim` directory, run it as follows:
 
 ```
-./circpad-sim-exp.py -c data/circpadtrace-example/ -r data/sim-relay-circpadtrace-example/ -t tor
+./circpad-sim-exp.py -c ./data/undefended/client-traces/ -r ./data/undefended/fakerelay-traces/ -t ../tor
 ```
 
-## Details
-
-Ticket [#31788](https://trac.torproject.org/projects/tor/ticket/31788)
-
-TODOs:
-- complete `circpad-sim-evaluator.py` as an example of how to use this thing
-- consider writing some tests for the simulator
-
-### Usage considerations
+## Usage considerations
 
 It's an embarrassingly parallel problem to sim many traces, so the simulator only
 simulates one trace per run. For parallelism, run the simulator many times.
 Likely workflow will be dominated by evaluation, including deep learning
 traning.
 
-### Limitations
+## Limitations
 
-Unfortunately, timers for sending padding cells are unreliable, 0-10 ms extra
-delay [#31653](https://trac.torproject.org/projects/tor/ticket/31653). We
-currently only document how to simulate traces from a relay, no collection. This
-is a flawed approximation, we encourage researchers to carefully consider the
-implications of this. Ideally, the community will provide carefully collected
-traces in the future with accurate timestamps at both clients and relays. The
-real variability of tor's internal timers will remain a problem though in the
-simulation.
+The simulator has some limitations that you need to be aware of.
 
-XXX:
-   - Document simulator timing inaccuracies (middle relays, etc)
-   - Document that simulator can use only one circ at a time
-     - To study multiplexing effects, must split and merge after
+### Timing Accuracy Issues
+
+The simulator inherits some [timing
+issues](https://github.com/mikeperry-tor/tor/blob/circuitpadding-dev-doc/doc/HACKING/CircuitPaddingDevelopment.md#7-future-features-and-optimizations)
+from the Circuit Padding Framework and adds some of its own.
+
+Unfortunately, timers for sending padding cells are unreliable, [0-10 ms extra
+delay](https://bugs.torproject.org/32670).
+
+Additionally, the padding framework currently has issues sending cells
+back-to-back [with 0 delay](https://bugs.torproject.org/31653).
+
+Finally, all cell event and log collection points for the event callbacks
+also impose some inaccuracy due to [queuing
+overhead](https://bugs.torproject.org/29494).
+
+In this simulator, we also do not model or factor in the varying latency
+of running this attack on the network near or at the Guard node. By default,
+we also only simulate middle node traces. This also introduces error.
+
+Ideally, the community will provide carefully collected traces in the future
+with accurate timestamps at both clients and relays.
+
+However, until these timing issues are resolved, it is wise to omit timestamps
+from classifier input, or at least truncate their resolution considerably.
+
+### Multiplexing Support
+
+The padding simulator only works on one circuit at a time, and it resets
+time to 0 for the start of each circuit. This means there is more work needed
+to model the multiplexing effects of eg Guard node TLS.
+
+To study the effects of multiplexing, you will need to additionally store the
+circuit start time separately, and use that to merge individual defended
+traces back into a single properly aligned input into your classifier.
+
+### Other TODOs
+
+TODOs:
+- complete `circpad-sim-evaluator.py` as an example of how to use this thing
+- consider writing some tests for the simulator
 
 

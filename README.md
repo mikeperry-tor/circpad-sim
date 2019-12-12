@@ -115,7 +115,7 @@ bit due to the simulated latency between client and relay.
 
 ## Adding Your Own Padding Machines
 
-Any padding machine you to the [simulator Tor
+Any padding machine you add to the [simulator Tor
 branch](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4)
 will apply in the simulator to the test traces above, as well as to the live
 network, in exactly the same way.

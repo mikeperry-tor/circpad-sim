@@ -33,9 +33,9 @@ def main():
     '''
 
     if not os.path.isdir(args["i"]):
-        sys.exit(f"{args['i']} is not a directory"))
+        sys.exit("{args['i']} is not a directory")
     if not os.path.isdir(args["o"]):
-        sys.exit(f"{args['o']} is not a directory"))
+        sys.exit("{args['o']} is not a directory")
 
     for fname in os.listdir(args["i"]):
         infname = os.path.join(args["i"], fname)

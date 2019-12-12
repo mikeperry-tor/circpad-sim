@@ -1,18 +1,3 @@
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315042913 source=client client_circ_id=1 event=circpad_machine_event_circ_added_hop
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315093257 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315132446 source=client client_circ_id=1 event=circpad_negotiate_logging
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315149128 source=client client_circ_id=1 event=circpad_machine_event_circ_built
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315222255 source=client client_circ_id=1 event=circpad_machine_event_circ_has_streams
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315255252 source=client client_circ_id=1 event=connection_ap_handshake_send_begin 45.33.89.159
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315347279 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4315409418 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4397363827 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481078013 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481182488 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481260116 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481403601 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481453717 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=4481527113 source=client client_circ_id=1 event=circpad_machine_event_circ_has_no_streams
 Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=5010206353 source=client client_circ_id=2 event=circpad_machine_event_circ_added_hop
 Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=5010305035 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
 Dec 11 17:53:35.000 [info] circpad_trace_event: timestamp=5010400717 source=client client_circ_id=2 event=circpad_negotiate_logging
@@ -25,21 +10,10 @@ Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5180190832 source=clie
 Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5355734817 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_received
 Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5357487217 source=client client_circ_id=2 event=circpad_machine_event_circ_added_hop
 Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5357516808 source=client client_circ_id=2 event=circpad_machine_event_circ_built
-Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5897437303 source=client client_circ_id=1 event=circpad_machine_event_circ_has_streams
-Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5897478593 source=client client_circ_id=1 event=connection_ap_handshake_send_begin 45.33.89.159
-Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5897541073 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5905508051 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:36.000 [info] circpad_trace_event: timestamp=5993995801 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6080802266 source=client client_circ_id=3 event=circpad_machine_event_circ_added_hop
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6080850950 source=client client_circ_id=3 event=circpad_cell_event_nonpadding_sent
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6080876850 source=client client_circ_id=3 event=circpad_negotiate_logging
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6080964166 source=client client_circ_id=3 event=circpad_cell_event_nonpadding_sent
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6161421546 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6161662136 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6161727103 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6161773454 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6162044375 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6162111582 source=client client_circ_id=1 event=circpad_machine_event_circ_has_no_streams
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6249720417 source=client client_circ_id=3 event=circpad_cell_event_nonpadding_received
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6250116002 source=client client_circ_id=3 event=circpad_machine_event_circ_added_hop
 Dec 11 17:53:37.000 [info] circpad_trace_event: timestamp=6250146801 source=client client_circ_id=3 event=circpad_cell_event_nonpadding_sent
@@ -98,7 +72,7 @@ Dec 11 17:53:41.000 [info] circpad_trace_event: timestamp=10420433925 source=cli
 Dec 11 17:53:41.000 [info] circpad_trace_event: timestamp=10421343491 source=client client_circ_id=7 event=circpad_machine_event_circ_added_hop
 Dec 11 17:53:41.000 [info] circpad_trace_event: timestamp=10421371884 source=client client_circ_id=7 event=circpad_machine_event_circ_built
 Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102475722627 source=client client_circ_id=2 event=circpad_machine_event_circ_has_streams
-Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102475758169 source=client client_circ_id=2 event=connection_ap_handshake_send_begin 138.201.14.212
+Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102475758169 source=client client_circ_id=2 event=connection_ap_handshake_send_begin check.torproject.org
 Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102475783771 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
 Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102663535352 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_received
 Dec 11 17:55:13.000 [info] circpad_trace_event: timestamp=102679700070 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
@@ -148,7 +122,7 @@ Dec 11 17:55:15.000 [info] circpad_trace_event: timestamp=104063402039 source=cl
 Dec 11 17:55:15.000 [info] circpad_trace_event: timestamp=104064321639 source=client client_circ_id=8 event=circpad_machine_event_circ_added_hop
 Dec 11 17:55:15.000 [info] circpad_trace_event: timestamp=104064340539 source=client client_circ_id=8 event=circpad_machine_event_circ_built
 Dec 11 17:55:20.000 [info] circpad_trace_event: timestamp=109952626497 source=client client_circ_id=2 event=circpad_machine_event_circ_has_streams
-Dec 11 17:55:20.000 [info] circpad_trace_event: timestamp=109952664910 source=client client_circ_id=2 event=connection_ap_handshake_send_begin 173.239.79.196
+Dec 11 17:55:20.000 [info] circpad_trace_event: timestamp=109952664910 source=client client_circ_id=2 event=connection_ap_handshake_send_begin eff.org
 Dec 11 17:55:20.000 [info] circpad_trace_event: timestamp=109952694736 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent
 Dec 11 17:55:21.000 [info] circpad_trace_event: timestamp=110298031727 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_received
 Dec 11 17:55:21.000 [info] circpad_trace_event: timestamp=110314319641 source=client client_circ_id=2 event=circpad_cell_event_nonpadding_sent

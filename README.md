@@ -3,7 +3,9 @@
 A minimal simulator for padding machines in Tor's [circuit padding
 framework](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md)
 
-This simulator is extremely fast and efficient, but has some rough edges.
+This simulator is extremely fast and efficient.
+
+This is also research code. It may not do exactly what you expect.
 
 Please read this document *CAREFULLY*.
 
@@ -32,7 +34,7 @@ Assuming you have this repository checked out in a directory named
 
 ```
 cd ..                                 # from circpad-sim checkout, go up
-git clone https://github.com/mikeperry-tor/tor.git 
+git clone https://github.com/mikeperry-tor/tor.git
 cd tor
 git checkout -t origin/circpad-sim-v4 # Adjust origin and branches as needed
 ```
@@ -41,7 +43,7 @@ Then build tor as normal. The simulator is tested as part of tor's unit testing
 framework, you can check for it as follows:
 
 ```
-./src/test/test circuitpadding_sim/.. 
+./src/test/test circuitpadding_sim/..
 circuitpadding_sim/circuitpadding_sim_main: [forking] OK
 1 tests ok.  (0 skipped)
 ```
@@ -132,7 +134,7 @@ and the rest of that documentation.
 To collect a client side trace using Tor Browser (TB):
 - copy `src/app/tor` and replace `tor` at `Browser/TorBrowser/Tor` of TB
 - in torrc of TB (`TorBrowser/Data/Tor`), add ``Log [circ]info notice stdout''
-- run TB with `/Browser/start-tor-browser --log example.log` 
+- run TB with `/Browser/start-tor-browser --log example.log`
 
 Additional information on running a custom Tor with Tor Browser can be found
 in the [Tor Browser Hacking Guide](https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Hacking#RunningMultipleTorBrowsers).
@@ -148,10 +150,17 @@ to generate a set of undefended traces is also available, but be aware that
 additional sanity checking and cleanup is needed to ensure that each site only
 uses one circuit.
 
-Specifically, the `torlog2circpadtrace.py` script takes only single longest
-trace from a log file, and makes no effort to make sure that the
+Specifically, by default the `torlog2circpadtrace.py` script takes only single
+longest trace from a log file, and makes no effort to make sure that the
 client_circuit_id's match any relay side traces. If you have multiple circuits
 in your log, you should ensure they are matching the relay side properly.
+
+If you want a specific circuit id other than the longest trace, you must
+specifically specicfy the circuit id with `torlog2circpadtrace.py --cid`.
+
+*NOTE*: The circuit id in the log output is the client circuit id. If you
+restart your Tor client, you will get duplicate circuit ids, causing your
+traces to get merged together.
 
 ## Collecting Relay-Side Traces
 
@@ -167,6 +176,13 @@ synthetic relay trace for input into the simulator using a real client trace:
 ```
 ./simrelaytrace.py -i ./data/undefended/client-traces/ -o data/undefended/fakerelay-traces
 ```
+
+By default, this strips off the first two cells (the onionskin handshake), and
+thus creates a middle node trace suitable for input to the padding simulator.
+
+If you want a guard node trace (for eg a classifier), add the --gaurd
+argument. This will cut the added latency in half, and not remove the first
+onionskin handshake.
 
 ### Real Middle Relay Traces
 
@@ -206,7 +222,7 @@ With pinned middle nodes, the simulator branch will send a special logging
 command cell only for your client branch circuits, to those middle nodes,
 instructing them to log only your Tor circuits. The circuit IDs will also be
 sent across in this cell, so numerically they will match on the client and the
-relay. 
+relay.
 
 The special logging negotiation cell event
 (`event=circpad_negotiate_logging`) and its following cell event are present
@@ -218,6 +234,10 @@ the longest trace, and makes no effort to make sure that the
 client_circuit_id's match. If you have multiple circuits in your relay log,
 you should ensure they are matching properly.
 
+*NOTE*: If you use multiple clients (or even just restart the same client),
+their circuit ids will collide on your relay logs, causing you to mismatch
+your traces.
+
 ### Real Guard Node Traces
 
 You can alternatively (or additionally) log at the entry node by editing the
@@ -227,7 +247,7 @@ in `tor/src/core/or/circuitpadding.c` in the Tor circpad simulator branch.
 You can list as many hop positions as you have relays for there.
 
 The simplest way to use a specific relay as a "guard" is to use the torrc
-Bridge directive. You can use this directive for relays that are 
+Bridge directive. You can use this directive for relays that are
 in the Tor consensus. In this way, you can test and measure the effects
 of other concurrent Tor activity is, without necessarily waiting for that
 relay to have the Guard flag.
@@ -241,7 +261,7 @@ Bridge 1.2.3.4:9001
 ```
 
 Clients only request logging from any node if the MiddleNodes directive is
-set. This means to log from just the Guard node, you must either change the 
+set. This means to log from just the Guard node, you must either change the
 `circpad_negotiate_logging()` check, or always pin generic middles, otherwise
 the logging negotiate cell will not get sent.
 
@@ -305,7 +325,7 @@ more issues on working with timestamps.
 ### Scope of Trace files
 
 The simulator branch records all padding and non-padding cells sent on a
-circuit immediately after the first circuit handshake has completed 
+circuit immediately after the first circuit handshake has completed
 at the hop that is performing the logging, until the circuit is
 closed/destroyed at that hop. The DESTROY cell itself is not counted.
 Any forwarded `RELAY_COMMAND_TRUNCATED` cells are.
@@ -317,8 +337,13 @@ started *after* the onionskin completed with the guard/bridge.
 At the guard/bridge, the first `circpad_cell_event_nonpadding_received`
 event is the onionskin that is to be forwarded to the middle hop.
 
+Notice that this means that the client and guard traces will exactlty mirror
+eachother.
+
 At the middle relay, the first `circpad_cell_event_nonpadding_received`
-event is the onionskin that is to be forwarded to the exit/third hop.
+event is the onionskin that is to be forwarded to the exit/third hop. This
+means that it is missing one send/recv pair from the client trace, but should
+otherwise mirror it.
 
 If your experiments rely on circuit setup timing information for the handshake
 before logging begins, please contact us for ways to provide this.  Otherwise

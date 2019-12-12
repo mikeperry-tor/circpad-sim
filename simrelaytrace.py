@@ -33,16 +33,16 @@ def main():
     '''
 
     if not os.path.isdir(args["i"]):
-        sys.exit("{args['i']} is not a directory")
+        sys.exit(args['i']+" is not a directory")
     if not os.path.isdir(args["o"]):
-        sys.exit("{args['o']} is not a directory")
+        sys.exit(args['o']+" is not a directory")
 
     for fname in os.listdir(args["i"]):
         infname = os.path.join(args["i"], fname)
         outfname = os.path.join(args["o"], fname)
 
         if os.path.exists(outfname):
-            sys.exit(f"output file {outfname} already exists")
+            sys.exit("output file "+outfname+" already exists")
 
         # estimate latency distribution between client-relay
         latency = estimate_latency_in_us(infname)

@@ -262,7 +262,7 @@ To convert the trace files to standard "WF-format" classifier input files
 without timestamps:
 
 ```
-./circpadtrace2wf.py -i ./data/undefended/client-traces/ -o ./data/undefended/client-wfcells/ -t cells
+./circpadtrace2wf.py -i ./data/defended/client-traces/ -o ./data/defended/client-wfcells/ -t cells
 ```
 
 To include either the time or directional time, change that -t argument

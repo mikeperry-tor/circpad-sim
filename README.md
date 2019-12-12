@@ -3,6 +3,11 @@
 A minimal simulator for padding machines in Tor's [circuit padding
 framework](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md)
 
+This simulator is extremely fast and efficient, but has some rough edges
+as it is still a work in progress.
+
+Please read this document *CAREFULLY*.
+
 ## Overview
 
 The circuit padding simulator consists of two repositories. This repository

@@ -217,7 +217,6 @@ simulates one trace per run. For parallelism, run the simulator many times.
 Likely workflow will be dominated by evaluation, including deep learning
 traning.
 
-
 ### Running experiments
 
 In `circpad-sim-exp.py` you'll find a brief example with mostly comments of how
@@ -247,6 +246,29 @@ eliminate these timestamps when they are used for classifier input.
 
 See also the [timing accuracy issues](#timing-accuracy-issues) section for
 more issues on working with timestamps.
+
+### Scope of Trace files
+
+The simulator branch records all padding and non-padding cells sent on a
+circuit immediately after the first circuit handshake has completed 
+at the hop that is performing the logging, until the circuit is
+closed/destroyed at that hop. The DESTROY cell itself is not counted.
+Any forwarded `RELAY_COMMAND_TRUNCATED` cells are.
+
+At the client, this means the first `circpad_cell_event_nonpadding_sent`
+event is the onionskin that is sent to the middle hop, since logging
+starts after the onionskin completes with the guard/bridge.
+
+At the guard/bridge, the first `circpad_cell_event_nonpadding_received`
+event is the onionskin that is to be forwarded to the middle hop.
+
+At the middle relay, the first `circpad_cell_event_nonpadding_received`
+event is the onionskin that is to be forwarded to the exit/third hop.
+
+If your experiments rely on circuit setup timing for the handshake
+before logging begins, please contact us for ways to provide this.
+Otherwise you can probably get away with inserting your own synthetic
+cell there.
 
 ## Limitations
 

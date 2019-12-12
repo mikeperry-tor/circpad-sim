@@ -50,7 +50,6 @@ def main():
         skipped_recv = False
 
         if args["guard"]:
-          print("lol")
           # If we are making a guard trace, we exactly mirror
           # the client trace. Dont skip the first handshake
           skipped_sent = True

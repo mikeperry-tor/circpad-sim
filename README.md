@@ -3,8 +3,7 @@
 A minimal simulator for padding machines in Tor's [circuit padding
 framework](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md)
 
-This simulator is extremely fast and efficient, but has some rough edges
-as it is still a work in progress.
+This simulator is extremely fast and efficient, but has some rough edges.
 
 Please read this document *CAREFULLY*.
 
@@ -19,7 +18,7 @@ patches](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) needed
 for Tor. That Tor branch adds patches to instrument Tor such that it logs cell
 events at the client, guard, middle, exit, or any other position.
 Additionally, it provides a unit test that can take input trace files and
-apply circuit padding machines to them.
+apply circuit padding machines to them, producing defended traces.
 
 With both pieces together, your Tor client and Tor relays can record
 undefended (non-padded) traces and then apply padding machines to these
@@ -95,7 +94,7 @@ grep "source=relay" ./data/defended/combined-logs/eff.org.log > ./data/defended/
 ./torlog2circpadtrace.py --ip -i ./data/defended/relay-logs/ -o ./data/defended/relay-traces/
 ./torlog2circpadtrace.py -i ./data/defended/client-logs/ -o ./data/defended/client-traces/
 git diff ./data/defended/client-traces/          # No diff
-git diff ./data/defended/relay-traces/           # Timestamp diffs
+git diff ./data/defended/relay-traces/           # No diff
 ```
 
 You should now have defended trace files for the client side and the relay
@@ -105,13 +104,28 @@ Finally, to convert the defended client trace files into standard WF
 classifier 1,-1 format files without timestamps, run:
 
 ```
-./circpadtrace2wf.py -i ./data/defended/client-traces/ -o ./data/defended/client-wf/ -t cells
-git diff ./data/defended/client-wf/              # No diff
+rm ./data/defended/client-wfcells/*
+./circpadtrace2wf.py -i ./data/defended/client-traces/ -o ./data/defended/client-wfcells/ -t cells
+git diff ./data/defended/client-wfcells/              # No diff
 ```
 
 To verify operation, if you diff your client traces to the ones in this repo,
 they should be identical. Note that the simulated relay traces may differ a
 bit due to the simulated latency between client and relay.
+
+## Adding Your Own Padding Machines
+
+Any padding machine you to the [simulator Tor
+branch](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4)
+will apply in the simulator to the test traces above, as well as to the live
+network, in exactly the same way.
+
+To get up and running with a real machine quickly, see the [Circuit Padding Quickstart
+Guide](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingQuickStart.md).
+
+For more examples, see [Section 5 of the developer
+doc](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment#5-example-padding-machines)
+and the rest of that documentation.
 
 ## Collecting Client-Side Traces
 

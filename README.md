@@ -210,14 +210,26 @@ You can alternatively (or additionally) log at the entry node by editing the
 `log_at_hops` variable of the function
 [circpad_negotiate_logging()](https://github.com/mikeperry-tor/tor/blob/circpad-sim-v4/src/core/or/circuitpadding.c#L2204)
 in `tor/src/core/or/circuitpadding.c` in the Tor circpad simulator branch.
-You can list as many hop positions as you have relays for there. Then, any
-entry nodes or bridges you specify (with `EntryNodes` or `Bridge` directives)
-will also log your traces, too.
+You can list as many hop positions as you have relays for there.
+
+The simplest way to use a specific relay as a "guard" is to use the torrc
+Bridge directive. You can use this directive for relays that are 
+in the Tor consensus. In this way, you can test and measure the effects
+of other concurrent Tor activity is, without necessarily waiting for that
+relay to have the Guard flag.
+
+For example, if your relay is running at 1.2.3.4 port 9001, you would
+specify the following in your client's torrc:
+
+```
+UseBridges 1
+Bridge 1.2.3.4:9001
+```
 
 Clients only request logging from any node if the MiddleNodes directive is
 set. This means to log from just the Guard node, you must either change the 
 `circpad_negotiate_logging()` check, or always pin generic middles, otherwise
-the cell will not get sent.
+the logging negotiate cell will not get sent.
 
 *NOTE*: If you list any positions that you do not control in that `log_at_hops`
 array, or don't properly restrict your client to use only your relays for

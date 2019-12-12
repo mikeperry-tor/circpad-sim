@@ -101,6 +101,14 @@ git diff ./data/defended/relay-traces/           # Timestamp diffs
 You should now have defended trace files for the client side and the relay
 side.
 
+Finally, to convert the defended client trace files into standard WF
+classifier 1,-1 format files without timestamps, run:
+
+```
+./circpadtrace2wf.py -i ./data/defended/client-traces/ -o ./data/defended/client-wf/ -t cells
+git diff ./data/defended/client-wf/              # No diff
+```
+
 To verify operation, if you diff your client traces to the ones in this repo,
 they should be identical. Note that the simulated relay traces may differ a
 bit due to the simulated latency between client and relay.
@@ -153,7 +161,7 @@ want to run the [circpad simulator Tor
 branch](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) with your
 padding machines applied as a middle relay.
 
-NOTE: If your experiments are sensitive to time, first see the [limitations
+*NOTE*: If your experiments are sensitive to time, first see the [limitations
 section](#limitations) and the [circpad timing section for more
 info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations)
 before just blindly using the timestamps produced from live crawls.
@@ -191,7 +199,7 @@ The special logging negotiation cell event
 in client-side log files, but are stripped from the trace files by
 `torlog2circpadtrace.py`. They are absent from relay log and trace files.
 
-NOTE: Just like the client side trace converion, that script takes only
+*NOTE*: Just like the client side trace converion, that script takes only
 the longest trace, and makes no effort to make sure that the
 client_circuit_id's match. If you have multiple circuits in your relay log,
 you should ensure they are matching properly.
@@ -211,11 +219,11 @@ set. This means to log from just the Guard node, you must either change the
 `circpad_negotiate_logging()` check, or always pin generic middles, otherwise
 the cell will not get sent.
 
-NOTE: If you list any positions that you do not control in that `log_at_hops`
+*NOTE*: If you list any positions that you do not control in that `log_at_hops`
 array, or don't properly restrict your client to use only your relays for
 those hops, you will get error cells back, which may affect your results.
 
-ALSO NOTE: If you set up logging to multiple hops at once, the earlier nodes
+*NOTE*: If you set up logging to multiple hops at once, the earlier nodes
 in the path will observe and record these additional logging cells as
 `circpad_nonpadding_cell_*` events (one receive, and one sent). Removing these
 is tricky in the general case, but you may be able to do it sifting through
@@ -250,9 +258,19 @@ In particular, the classifier should only see `circpad_cell_event_*` events
 and it obviously should be not be given visibility into if they are padding or
 not. It should only see that they were sent or recieved.
 
-Also, the nanosecond timestamps are way higher precision than a network
-adversary may see in practice, and may allow the classifier to learn traits
-based on fine-grained application timings. You may want to truncate or
+To convert the trace files to standard "WF-format" classifier input files
+without timestamps:
+
+```
+./circpadtrace2wf.py -i ./data/undefended/client-traces/ -o ./data/undefended/client-wfcells/ -t cells
+```
+
+To include either the time or directional time, change that -t argument
+accordingly.
+
+*NOTE*: Be aware that the nanosecond timestamps are way higher precision than a
+network adversary may see in practice, and may allow the classifier to learn
+traits based on fine-grained application timings. You may want to truncate or
 eliminate these timestamps when they are used for classifier input.
 
 See also the [timing accuracy issues](#timing-accuracy-issues) section for

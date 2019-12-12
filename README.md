@@ -205,7 +205,15 @@ nodes in the path will observe and record these additional logging cells as
 case, but you may be able to do it sifting through the corresponding client
 logs. We do not do anything for this yet.
 
-## Running experiments
+## Usage considerations
+
+It's an embarrassingly parallel problem to sim many traces, so the simulator only
+simulates one trace per run. For parallelism, run the simulator many times.
+Likely workflow will be dominated by evaluation, including deep learning
+traning.
+
+
+### Running experiments
 
 In `circpad-sim-exp.py` you'll find a brief example with mostly comments of how
 one could script the evaluation of padding machines with the circuitpadding
@@ -217,20 +225,23 @@ While in this `circpad-sim` directory, run it as follows:
 ./circpad-sim-exp.py -c ./data/undefended/client-traces/ -r ./data/undefended/fakerelay-traces/ -t ../tor
 ```
 
-## Usage considerations
+### Working With Trace Files
 
-It's an embarrassingly parallel problem to sim many traces, so the simulator only
-simulates one trace per run. For parallelism, run the simulator many times.
-Likely workflow will be dominated by evaluation, including deep learning
-traning.
+The trace files contain full Circuit Padding Framework event logs at
+nanosecond precision. They need some processing before they can be used
+in a classifier.
 
-### Events
+In particular, the classifier should only see `circpad_cell_event_*` events
+and it obviously should be not be given visibility into if they are padding or
+not. It should only see that they were sent or recieved.
 
-XXX: Which events to use from traces
+Also, the nanosecond timestamps are way higher precision than a network
+adversary may see in practice, and may allow the classifier to learn traits
+based on fine-grained application timings. You may want to truncate or
+eliminate these timestamps when they are used for classifier input.
 
-XXX: What things are extra?
-
-XXX: What things are missing?
+See also the [timing accuracy issues](#timing-accuracy-issues) section for
+more issues on working with timestamps.
 
 ## Limitations
 

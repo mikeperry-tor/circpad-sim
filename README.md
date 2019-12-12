@@ -9,10 +9,10 @@ The circuit padding simulator consists of two repositories. This repository
 holds python glue code that extracts traces from Tor logfiles and synthesizes
 new traces.
 
-The branch with [the tor patches you are looking
-for](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) is
-elsewhere. That Tor branch adds patches to instrument Tor such that it logs
-cell events at the client, guard, middle, exit, or any other position.
+There is a [separate Tor branch with
+patches](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) needed
+for Tor. That Tor branch adds patches to instrument Tor such that it logs cell
+events at the client, guard, middle, exit, or any other position.
 Additionally, it provides a unit test that can take input trace files and
 apply circuit padding machines to them.
 
@@ -27,10 +27,10 @@ Assuming you have this repository checked out in a directory named
 `circpad-sim`, and you're currently in that directory, then do:
 
 ```
-cd ..      # from this circpad-sim checkout dir, go up one level
-git clone https://github.com/mikeperry-tor/tor.git  # Adjust origin and branches as needed
+cd ..                                 # from circpad-sim checkout, go up
+git clone https://github.com/mikeperry-tor/tor.git 
 cd tor
-git checkout -t origin/circpad-sim-v4
+git checkout -t origin/circpad-sim-v4 # Adjust origin and branches as needed
 ```
 
 Then build tor as normal. The simulator is tested as part of tor's unit testing
@@ -42,8 +42,8 @@ circuitpadding_sim/circuitpadding_sim_main: [forking] OK
 1 tests ok.  (0 skipped)
 ```
 
-This repository also has some example logs and traces that you can apply the
-built-in padding machines to, using the unit test as a simulator.
+This repository also has some example logs and traces that you can use with
+built-in padding machines, using the unit test as a simulator.
 
 First, we must convert our undefended Tor client logs into trace files. From
 this circpad-sim checkout, do:
@@ -79,8 +79,9 @@ Dec 10 10:13:50.241 [info] circpad_trace_event(): timestamp=11376008271 source=c
 
 Note that this log file contains *both* relay and client traces!
 
-To convert that log output into a trace file that can then again be used as
-input to classifiers or other code, do:
+To convert that log output into a trace file that can be used as input to
+classifiers or other code, do:
+
 ```
 rm ./data/defended/client-traces/*               # Remove any old traces
 rm ./data/defended/relay-traces/*                # Remove any old traces
@@ -120,6 +121,11 @@ to generate a set of undefended traces is also available, but be aware that
 additional sanity checking and cleanup is needed to ensure that each site only
 uses one circuit.
 
+Specifically, the `torlog2circpadtrace.py` script takes only single longest
+trace from a log file, and makes no effort to make sure that the
+client_circuit_id's match any relay side traces. If you have multiple circuits
+in your log, you should ensure they are matching the relay side properly.
+
 ## Collecting Relay-Side Traces
 
 In order for padding machines to work, they need traces for both a relay and a
@@ -144,7 +150,7 @@ padding machines applied as a middle relay.
 
 NOTE: If your experiments are sensitive to time, first see the [limitations
 section](#limitations) and the [circpad timing section for more
-info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations))
+info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations)
 before just blindly using the timestamps produced from live crawls.
 
 Your Middle Node Torrc should look roughy like:
@@ -175,7 +181,7 @@ instructing them to log only your Tor circuits. The circuit IDs will also be
 sent across in this cell, so numerically they will match on the client and the
 relay. 
 
-This special logging negotiation cell event
+The special logging negotiation cell event
 (`event=circpad_negotiate_logging`) and its following cell event are present
 in client-side log files, but are stripped from the trace files by
 `torlog2circpadtrace.py`. They are absent from relay log and trace files.
@@ -204,11 +210,11 @@ NOTE: If you list any positions that you do not control in that `log_at_hops`
 array, or don't properly restrict your client to use only your relays for
 those hops, you will get error cells back, which may affect your results.
 
-ALSO NOTE: If you set up logging to multiple hops at once, the earlier
-nodes in the path will observe and record these additional logging cells as
-`circpad_nonpadding_cell_sent` events. Removing these is tricky in the general
-case, but you may be able to do it sifting through the corresponding client
-logs. We do not do anything for this yet.
+ALSO NOTE: If you set up logging to multiple hops at once, the earlier nodes
+in the path will observe and record these additional logging cells as
+`circpad_nonpadding_cell_*` events (one receive, and one sent). Removing these
+is tricky in the general case, but you may be able to do it sifting through
+the corresponding client logs. We do not do anything for this yet.
 
 ## Usage considerations
 
@@ -257,7 +263,7 @@ Any forwarded `RELAY_COMMAND_TRUNCATED` cells are.
 
 At the client, this means the first `circpad_cell_event_nonpadding_sent`
 event is the onionskin that is sent to the middle hop, since logging
-starts after the onionskin completes with the guard/bridge.
+started *after* the onionskin completed with the guard/bridge.
 
 At the guard/bridge, the first `circpad_cell_event_nonpadding_received`
 event is the onionskin that is to be forwarded to the middle hop.
@@ -265,10 +271,9 @@ event is the onionskin that is to be forwarded to the middle hop.
 At the middle relay, the first `circpad_cell_event_nonpadding_received`
 event is the onionskin that is to be forwarded to the exit/third hop.
 
-If your experiments rely on circuit setup timing for the handshake
-before logging begins, please contact us for ways to provide this.
-Otherwise you can probably get away with inserting your own synthetic
-cell there.
+If your experiments rely on circuit setup timing information for the handshake
+before logging begins, please contact us for ways to provide this.  Otherwise
+you can probably get away with inserting your own synthetic cell events there.
 
 ## Limitations
 
@@ -280,24 +285,23 @@ The simulator inherits some [timing
 issues](https://github.com/mikeperry-tor/tor/blob/circuitpadding-dev-doc/doc/HACKING/CircuitPaddingDevelopment.md#7-future-features-and-optimizations)
 from the Circuit Padding Framework and adds some of its own.
 
-Unfortunately, timers for sending padding cells are unreliable, [0-10 ms extra
-delay](https://bugs.torproject.org/32670).
+Unfortunately, timers for sending padding cells are unreliable, with [0-10 ms
+extra delay](https://bugs.torproject.org/32670).
 
 Additionally, the padding framework currently has issues sending cells
 back-to-back [with 0 delay](https://bugs.torproject.org/31653).
 
 Finally, all cell event and log collection points for the event callbacks
 also impose some inaccuracy due to [queuing
-overhead](https://bugs.torproject.org/29494).
+delay](https://bugs.torproject.org/29494).
 
 In this simulator, we also do not model or factor in the varying latency
-of running this attack on the network near or at the Guard node. By default,
-we also only simulate middle node traces. This also introduces error.
+of running this attack on the network near or at the Guard node. You get
+nanosecond precision timestamps at the client, which may encode CPU and
+memory usage patterns that give away more information than an adversary
+normally would have.
 
-Ideally, the community will provide carefully collected traces in the future
-with accurate timestamps at both clients and relays.
-
-However, until these timing issues are resolved, it is wise to omit timestamps
+Until these timing issues are resolved, it is wise to omit timestamps
 from classifier input, or at least truncate their resolution considerably.
 
 ### Multiplexing Multiple Circuits
@@ -307,18 +311,21 @@ extracts the longest circuit id trace from a log file, if multiple circuits
 are present.
 
 It also resets time to 0 for the start of each circuit. This means there is
-more work needed to model the multiplexing effects of eg Guard node TLS.
+more work needed to model the multiplexing effects of Guard node TLS.
 
 To study the effects of multiplexing, you will need to write some scripts to
 sepeate logfiles by circuit ID, but additionally store the circuit start time
 separately, and use that start time to merge individual defended traces back
-into a single properly aligned input into your classifier (which should be 
-blind to the circuit separation).
+into a single properly aligned input into your classifier. Your classifier
+should not get circuit ID separation information in this case.
 
-NOTE: Just like the client side log converion, the relay side log conversion
-takes only the longest trace, and makes no effort to make sure that the
-`client_circ_id` matches. If you have multiple circuits in your relay log,
-you should ensure they are matching properly.
+### Proper Client-Relay Circuit Matching
+
+Both the client side log converion and the relay side log conversion
+take only the longest trace, and makes no effort to make sure that the
+`client_circ_id` matches the desired circuit on relay and client. If you
+have multiple circuits in your relay log, you should ensure they are
+matching properly.
 
 ### Other TODOs
 

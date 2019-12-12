@@ -203,7 +203,7 @@ ALSO NOTE: If you set up logging to multiple hops at once, the earlier
 nodes in the path will observe and record these additional logging cells as
 `circpad_nonpadding_cell_sent` events. Removing these is tricky in the general
 case, but you may be able to do it sifting through the corresponding client
-logs.
+logs. We do not do anything for this yet.
 
 ## Running experiments
 

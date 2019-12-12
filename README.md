@@ -180,6 +180,11 @@ This special logging negotiation cell event
 in client-side log files, but are stripped from the trace files by
 `torlog2circpadtrace.py`. They are absent from relay log and trace files.
 
+NOTE: Just like the client side trace converion, that script takes only
+the longest trace, and makes no effort to make sure that the
+client_circuit_id's match. If you have multiple circuits in your relay log,
+you should ensure they are matching properly.
+
 ### Real Guard Node Traces
 
 You can alternatively (or additionally) log at the entry node by editing the
@@ -287,6 +292,11 @@ sepeate logfiles by circuit ID, but additionally store the circuit start time
 separately, and use that start time to merge individual defended traces back
 into a single properly aligned input into your classifier (which should be 
 blind to the circuit separation).
+
+NOTE: Just like the client side log converion, the relay side log conversion
+takes only the longest trace, and makes no effort to make sure that the
+`client_circ_id` matches. If you have multiple circuits in your relay log,
+you should ensure they are matching properly.
 
 ### Other TODOs
 

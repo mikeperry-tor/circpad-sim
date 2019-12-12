@@ -1,16 +1,11 @@
-Dec 12 01:42:53.172 [info] circpad_trace_event(): timestamp=4426876768148 source=relay client_circ_id=2 event=circpad_negotiate_logging
 Dec 12 01:42:53.172 [info] circpad_trace_event(): timestamp=4426876805487 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_received
 Dec 12 01:42:53.182 [info] circpad_trace_event(): timestamp=4426886956074 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_sent
-Dec 12 01:42:53.781 [info] circpad_trace_event(): timestamp=4427485950893 source=relay client_circ_id=3 event=circpad_negotiate_logging
 Dec 12 01:42:53.782 [info] circpad_trace_event(): timestamp=4427486000129 source=relay client_circ_id=3 event=circpad_cell_event_nonpadding_received
 Dec 12 01:42:53.926 [info] circpad_trace_event(): timestamp=4427630599756 source=relay client_circ_id=3 event=circpad_cell_event_nonpadding_sent
-Dec 12 01:42:54.800 [info] circpad_trace_event(): timestamp=4428504958211 source=relay client_circ_id=4 event=circpad_negotiate_logging
 Dec 12 01:42:54.801 [info] circpad_trace_event(): timestamp=4428505057689 source=relay client_circ_id=4 event=circpad_cell_event_nonpadding_received
 Dec 12 01:42:54.815 [info] circpad_trace_event(): timestamp=4428519100680 source=relay client_circ_id=4 event=circpad_cell_event_nonpadding_sent
-Dec 12 01:42:55.775 [info] circpad_trace_event(): timestamp=4429479845901 source=relay client_circ_id=5 event=circpad_negotiate_logging
 Dec 12 01:42:55.775 [info] circpad_trace_event(): timestamp=4429479917695 source=relay client_circ_id=5 event=circpad_cell_event_nonpadding_received
 Dec 12 01:42:55.796 [info] circpad_trace_event(): timestamp=4429500059839 source=relay client_circ_id=5 event=circpad_cell_event_nonpadding_sent
-Dec 12 01:42:56.800 [info] circpad_trace_event(): timestamp=4430504713515 source=relay client_circ_id=6 event=circpad_negotiate_logging
 Dec 12 01:42:56.800 [info] circpad_trace_event(): timestamp=4430504734412 source=relay client_circ_id=6 event=circpad_cell_event_nonpadding_received
 Dec 12 01:42:56.820 [info] circpad_trace_event(): timestamp=4430524400809 source=relay client_circ_id=6 event=circpad_cell_event_nonpadding_sent
 Dec 12 01:43:57.169 [info] circpad_trace_event(): timestamp=4490873784081 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_received
@@ -46,7 +41,6 @@ Dec 12 01:43:57.897 [info] circpad_trace_event(): timestamp=4491601760871 source
 Dec 12 01:43:57.897 [info] circpad_trace_event(): timestamp=4491601775470 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_sent
 Dec 12 01:43:58.280 [info] circpad_trace_event(): timestamp=4491984221959 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_received
 Dec 12 01:43:58.280 [info] circpad_trace_event(): timestamp=4491984266983 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_received
-Dec 12 01:43:58.443 [info] circpad_trace_event(): timestamp=4492147418450 source=relay client_circ_id=7 event=circpad_negotiate_logging
 Dec 12 01:43:58.443 [info] circpad_trace_event(): timestamp=4492147456989 source=relay client_circ_id=7 event=circpad_cell_event_nonpadding_received
 Dec 12 01:43:58.464 [info] circpad_trace_event(): timestamp=4492168414946 source=relay client_circ_id=7 event=circpad_cell_event_nonpadding_sent
 Dec 12 01:44:12.953 [info] circpad_trace_event(): timestamp=4506657826318 source=relay client_circ_id=2 event=circpad_cell_event_nonpadding_received

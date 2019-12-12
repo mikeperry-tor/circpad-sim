@@ -71,10 +71,10 @@ test binary:
 This gives Tor log output of the following format in `./data/defended/combined-logs/eff.org.log`:
 
 ```
-Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339844396 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11339850638 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
-Dec 10 10:13:50.240 [info] circpad_trace_event__real: timestamp=11375969198 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
-Dec 10 10:13:50.241 [info] circpad_trace_event__real: timestamp=11376008271 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
+Dec 10 10:13:50.240 [info] circpad_trace_event(): timestamp=11339844396 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
+Dec 10 10:13:50.240 [info] circpad_trace_event(): timestamp=11339850638 source=relay client_circ_id=1 event=circpad_cell_event_nonpadding_sent
+Dec 10 10:13:50.240 [info] circpad_trace_event(): timestamp=11375969198 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
+Dec 10 10:13:50.241 [info] circpad_trace_event(): timestamp=11376008271 source=client client_circ_id=1 event=circpad_cell_event_nonpadding_received
 ```
 
 Note that this log file contains *both* relay and client traces!
@@ -135,29 +135,34 @@ synthetic relay trace for input into the simulator using a real client trace:
 ./simrelaytrace.py -i ./data/undefended/client-traces/ -o data/undefended/fakerelay-traces
 ```
 
-### Real Relay Traces
+### Real Middle Relay Traces
 
-However, if your experiments are sensitive to time (see [the circpad timing
-section for more
-info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations)),
-and/or if you are reproducing your padding machines on the live network, you will
+If you are reproducing your padding machines on the live network, you will
 want to run the [circpad simulator Tor
 branch](https://github.com/mikeperry-tor/tor/commits/circpad-sim-v4) with your
 padding machines applied as a middle relay.
 
-Your Torrc should look roughy like:
+NOTE: If your experiments are sensitive to time, first see the [limitations
+section](#limitations) and the [circpad timing section for more
+info](https://github.com/torproject/tor/blob/master/doc/HACKING/CircuitPaddingDevelopment.md#72-timing-and-queuing-optimizations))
+before just blindly using the timestamps produced from live crawls.
+
+Your Middle Node Torrc should look roughy like:
 
 ```
 Nickname researchermiddle
 ORPort 9001
 ExitRelay 0
 Log notice stdout
-Log [circ]info notice file relay.log
+Log [circ]info file relay-circpad.log
 ```
+
 Then, when Tor starts up and tells you your relay fingerprint, you should go
 back to your Tor Browser torrc, and add:
 
-``` MiddleNodes YOUR_FINGERPRINT_HERE Log [circ]info notice file client.log
+```
+MiddleNodes YOUR_FINGERPRINT_HERE
+Log [circ]info file client-circpad.log
 ```
 
 It will [take some time for new
@@ -166,28 +171,39 @@ flag from the authorites (which they must have to get used by your client).
 
 With pinned middle nodes, the simulator branch will send a special logging
 command cell only for your client branch circuits, to those middle nodes,
-instructing them to log only your Tor circuits. This special logging
-negotiation cell is stripped from the log trace files, so it will not affect
-your results. XXX: Test this
+instructing them to log only your Tor circuits. The circuit IDs will also be
+sent across in this cell, so numerically they will match on the client and the
+relay. 
 
-The circuit IDs will also be sent across in this cell, so numerically they
-will match on the client and the relay. 
+This special logging negotiation cell event
+(`event=circpad_negotiate_logging`) and its following cell event are present
+in client-side log files, but are stripped from the trace files by
+`torlog2circpadtrace.py`. They are absent from relay log and trace files.
+
+### Real Guard Node Traces
 
 You can alternatively (or additionally) log at the entry node by editing the
 `log_at_hops` variable of the function
 [circpad_negotiate_logging()](https://github.com/mikeperry-tor/tor/blob/circpad-sim-v4/src/core/or/circuitpadding.c#L2204)
 in `tor/src/core/or/circuitpadding.c` in the Tor circpad simulator branch.
-You can list as many hop positions as you have relays for there.
+You can list as many hop positions as you have relays for there. Then, any
+entry nodes or bridges you specify (with `EntryNodes` or `Bridge` directives)
+will also log your traces, too.
 
-Then, any entry nodes or bridges you specify (with `EntryNodes` or `Bridge`
-directives) will also log your traces, too.
+Clients only request logging from any node if the MiddleNodes directive is
+set. This means to log from just the Guard node, you must either change the 
+`circpad_negotiate_logging()` check, or always pin generic middles, otherwise
+the cell will not get sent.
 
 NOTE: If you list any positions that you do not control in that `log_at_hops`
 array, or don't properly restrict your client to use only your relays for
 those hops, you will get error cells back, which may affect your results.
 
-XXX: Test + writeme
-   - Verify real traces match simulator output in event ordering
+ALSO NOTE: If you set up logging to multiple hops at once, the earlier
+nodes in the path will observe and record these additional logging cells as
+`circpad_nonpadding_cell_sent` events. Removing these is tricky in the general
+case, but you may be able to do it sifting through the corresponding client
+logs.
 
 ## Running experiments
 
@@ -207,6 +223,14 @@ It's an embarrassingly parallel problem to sim many traces, so the simulator onl
 simulates one trace per run. For parallelism, run the simulator many times.
 Likely workflow will be dominated by evaluation, including deep learning
 traning.
+
+### Events
+
+XXX: Which events to use from traces
+
+XXX: What things are extra?
+
+XXX: What things are missing?
 
 ## Limitations
 
@@ -238,15 +262,20 @@ with accurate timestamps at both clients and relays.
 However, until these timing issues are resolved, it is wise to omit timestamps
 from classifier input, or at least truncate their resolution considerably.
 
-### Multiplexing Support
+### Multiplexing Multiple Circuits
 
-The padding simulator only works on one circuit at a time, and it resets
-time to 0 for the start of each circuit. This means there is more work needed
-to model the multiplexing effects of eg Guard node TLS.
+The padding simulator only works on one circuit at a time. It also only
+extracts the longest circuit id trace from a log file, if multiple circuits
+are present.
 
-To study the effects of multiplexing, you will need to additionally store the
-circuit start time separately, and use that to merge individual defended
-traces back into a single properly aligned input into your classifier.
+It also resets time to 0 for the start of each circuit. This means there is
+more work needed to model the multiplexing effects of eg Guard node TLS.
+
+To study the effects of multiplexing, you will need to write some scripts to
+sepeate logfiles by circuit ID, but additionally store the circuit start time
+separately, and use that start time to merge individual defended traces back
+into a single properly aligned input into your classifier (which should be 
+blind to the circuit separation).
 
 ### Other TODOs
 

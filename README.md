@@ -407,4 +407,6 @@ TODOs:
 - complete `circpad-sim-evaluator.py` as an example of how to use this thing
 - consider writing some tests for the simulator
 
+## Acknowledgments
 
+This research was supported in part by NSF grant CNS-1619454.
